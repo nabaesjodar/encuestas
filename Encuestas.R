@@ -2,8 +2,6 @@ setwd("C:/Users/diego/Dropbox/IRNAD/OBServ/EBD/2021 tablas")
 library(readODS)
 library(dplyr)
 ##
-test
-##
 
 encuestas <- read_ods("multidim_quests_bra_arg_ecu.ods")   #incluye cargas de datos en proceso
 encuestas <- encuestas[1:111,] #solo estudios cargados completamente
@@ -47,35 +45,70 @@ predictors <- encuestas %>% select(study, owner, education, interact_w_prof, gen
                                employee_tot_n,	employee_male_n, employee_female_n, 
                                crops_area, property_ha, activs_field0_admin1_both2)
 
-### Regression trees ###
+### Regression trees ### 
 #subset per study
+
+#Alto Valle _AV
 dataBFP_AV <- filter(dataBFP, study == "alto_valle")
 predictors_AV <- filter(predictors, study == "alto_valle")
-
 #arrange data for RT for Alto Valle
 BFP0 <- dataBFP_AV$BFP0   #response var
 RT_AV <- cbind(BFP0, predictors_AV)
 
+#Coffe _CBH
+dataBFP_CBH <- filter(dataBFP, study == "coffe_bahia")
+predictors_CBH <- filter(predictors, study == "coffe_bahia")
+#arrange data for RT for coffe_bahia
+BFP1 <- dataBFP_CBH$BFP1   #response var
+RT_CBH <- cbind(BFP1, predictors_CBH)
+
+#habas_cotopaxi
+dataBFP_HCO <- filter(dataBFP, study == "habas_cotopaxi")
+predictors_HCO <- filter(predictors, study == "habas_cotopaxi")
+#arrange data for RT for coffe_bahia
+BFP2 <- dataBFP_HCO$BFP2   #response var
+RT_HCO <- cbind(BFP2, predictors_HCO)
+
 
 library(rpart)
 # grow tree
+
+#Alto Valle _AV
 fit <- rpart(BFP0~owner+ education+ interact_w_prof+ gender_f1_m0+	
                machin_s0_h1+	assoc_inst+ other_income+hive_use+ commerce+
                access_credit+	irrigation+	family_tot_n+	family_female_n+	
-               family_male_n+ bee_importance+ age+ internet_access+	certific+
+               family_male_n+  bee_importance+ age+ internet_access+	certific+   #
                employee_tot_n+	employee_male_n+ employee_female_n+ 
                crops_area+ property_ha+ activs_field0_admin1_both2, 
              method="anova", data=RT_AV)
+#Coffe _CBH
+fit <- rpart(BFP1~owner+ education+ interact_w_prof+ gender_f1_m0+	
+               machin_s0_h1+	assoc_inst+ other_income+hive_use+ commerce+
+               access_credit+	irrigation+	family_tot_n+	family_female_n+	
+               family_male_n+ bee_importance+ age+ internet_access+	certific+   #
+               employee_tot_n+	employee_male_n+ employee_female_n+ 
+               crops_area+ property_ha+ activs_field0_admin1_both2, 
+             method="anova", data=RT_CBH)
+#habas_cotopaxi
+fit <- rpart(BFP2~owner+ education+ interact_w_prof+ gender_f1_m0+	
+               machin_s0_h1+	assoc_inst+ other_income+hive_use+ commerce+
+               access_credit+	irrigation+	family_tot_n+	family_female_n+	
+               family_male_n+ bee_importance+ age+ internet_access+	certific+   #
+               employee_tot_n+	employee_male_n+ employee_female_n+ 
+               crops_area+ property_ha+ activs_field0_admin1_both2, 
+             method="anova", data=RT_HCO)
+
+#Resulatados
 plot(fit)
 printcp(fit) # display the results
 plotcp(fit) # visualize cross-validation results
 summary(fit) # detailed summary of splits
-
 # create additional plots
 par(mfrow=c(1,2)) # two plots on one page
 rsq.rpart(fit) # visualize cross-validation results  
 
 
+### PARTY...
 install.packages("multcomp")
 install.packages("party")
 library(party)
