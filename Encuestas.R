@@ -52,29 +52,32 @@ dataBFP_AV <- filter(dataBFP, study_code == "AV") %>% select(-study_code)
 predictors_AV <- filter(predictors, study_code == "AV") %>% select(-study_code)
 #arrange data for RT for Alto Valle
 BFP0 <- dataBFP_AV$BFP0   #response var
-RT_AV <- cbind(BFP0, predictors_AV) %>% filter(!is.na(BFP0)) #junto predics con rta, y elimino NAs en respuesta (para party-ctree).
-
+#junto predics con rta, y elimino NAs en respuesta (para party-ctree):
+RT_AV <- cbind(BFP0, predictors_AV) %>% filter(!is.na(BFP0)) 
 
 #Coffe _CBH
 dataBFP_CBH <- filter(dataBFP, study_code == "CBH")%>% select(-study_code)
 predictors_CBH <- filter(predictors, study_code == "CBH")%>% select(-study_code)
 #arrange data for RT for coffe_bahia
 BFP1 <- dataBFP_CBH$BFP1   #response var
-RT_CBH <- cbind(BFP1, predictors_CBH)
+#junto predics con rta, y elimino NAs en respuesta (para party-ctree):
+RT_CBH <- cbind(BFP1, predictors_CBH)%>% filter(!is.na(BFP1)) 
 
 #habas_cotopaxi
 dataBFP_HCO <- filter(dataBFP, study_code == "HCO")%>% select(-study_code)
 predictors_HCO <- filter(predictors, study_code == "HCO")%>% select(-study_code)
 #arrange data for RT for coffe_bahia
 BFP2 <- dataBFP_HCO$BFP2   #response var
-RT_HCO <- cbind(BFP2, predictors_HCO)
+#junto predics con rta, y elimino NAs en respuesta (para party-ctree):
+RT_HCO <- cbind(BFP2, predictors_HCO)%>% filter(!is.na(BFP2)) 
 
-### rPART
+### PRUEBAS DE Regression Trees PRELIMINARES ###
+## rPART
 library(rpart)
 
 # grow tree
 #Alto Valle _AV
-fit <- rpart(BFP0~owner+ education+ interact_w_prof+ gender_f1_m0+	
+fit0 <- rpart(BFP0~owner+ education+ interact_w_prof+ gender_f1_m0+	
                machin_s0_h1+	assoc_inst+ other_income+hive_use+ commerce+
                access_credit+	irrigation+	family_tot_n+	family_female_n+	
                family_male_n+ bee_importance+ age+ internet_access+	certific+   #
@@ -82,7 +85,7 @@ fit <- rpart(BFP0~owner+ education+ interact_w_prof+ gender_f1_m0+
                crops_area+ property_ha+ activs_field0_admin1_both2, 
              method="anova", data=RT_AV)
 #Coffe _CBH
-fit <- rpart(BFP1~owner+ education+ interact_w_prof+ gender_f1_m0+	
+fit1 <- rpart(BFP1~owner+ education+ interact_w_prof+ gender_f1_m0+	
                machin_s0_h1+	assoc_inst+ other_income+hive_use+ commerce+
                access_credit+	irrigation+	family_tot_n+	family_female_n+	
                family_male_n+ bee_importance+ age+ internet_access+	certific+   #
@@ -90,7 +93,7 @@ fit <- rpart(BFP1~owner+ education+ interact_w_prof+ gender_f1_m0+
                crops_area+ property_ha+ activs_field0_admin1_both2, 
              method="anova", data=RT_CBH)
 #habas_cotopaxi
-fit <- rpart(BFP2~owner+ education+ interact_w_prof+ gender_f1_m0+	
+fit2 <- rpart(BFP2~owner+ education+ interact_w_prof+ gender_f1_m0+	
                machin_s0_h1+	assoc_inst+ other_income+hive_use+ commerce+
                access_credit+	irrigation+	family_tot_n+	family_female_n+	
                family_male_n+ bee_importance+ age+ internet_access+	certific+   #
@@ -99,22 +102,25 @@ fit <- rpart(BFP2~owner+ education+ interact_w_prof+ gender_f1_m0+
              method="anova", data=RT_HCO)
 
 #Resultados
-plot(fit)
-printcp(fit) # display the results
-plotcp(fit) # visualize cross-validation results
-summary(fit) # detailed summary of splits
+plot(fit0)
+printcp(fit1) # display the results
+plotcp(fit1) # visualize cross-validation results
+summary(fit1) # detailed summary of splits
 # create additional plots
 par(mfrow=c(1,2)) # two plots on one page
-rsq.rpart(fit) # visualize cross-validation results  
+rsq.rpart(fit0) # visualize cross-validation results  
 
 
 ### PARTY
 install.packages("party")
 library(party)
-fit <- ctree(BFP0~., data=RT_AV)   #VER lo del character...
-plot(fit)
+fit1y <- ctree(BFP1~., data=RT_CBH)   #VER lo del character...
+plot(fit1y)
+summary(fit1y)
 
-
+### plots de datos ###
+library(Hmisc)
+hist.data.frame(dataBFP)
 
 
 
