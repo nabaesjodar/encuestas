@@ -134,6 +134,7 @@ summary(fit1y)
 
 ### EXPLORATORY plots de datos crudos ###
 library(Hmisc)
+x11()
 hist.data.frame(predictors_AV)
 boxplot(predictors_AV)
 
@@ -239,8 +240,6 @@ hist(predictors_HCO$age)
 
 
 
-
-
 #bases para GitHub:
 Apple_arg <- filter(encuestas, study_code == "AV")
 Coffe_bra <- filter(encuestas, study_code == "CBH")
@@ -257,3 +256,62 @@ encuestas0 <- read_ods("encuestas_full.ods")   #incluye cargas de datos en proce
 encuestas1 <- encuestas0[1:111,]              #solo estudios cargados completamente.
 write.csv(encuestas1,"C:/Users/diego/Dropbox/IRNAD/OBServ/EBD/encuestas\\encuestas.csv", row.names = FALSE)
 
+
+
+###Elena
+##Analisis exploratorios Elena
+library(corrgram)
+library(vegan)
+
+
+str(predictors_AV)
+colnames(predictors_AV)
+summary(predictors_AV)
+View(predictors_AV)
+
+str(dataBFP_AV)
+#Correlograma con PCA sobre buenas prácticas biodiversidad, Pearson
+corrgram(dataBFP_AV[,1:8] , order="PCA", lower.panel=panel.cor,
+         upper.panel=panel.pie, text.panel=panel.txt,
+         cex.labels = 1,
+         col.regions = colorRampPalette(c("red", "salmon", "white", "mediumseagreen", "darkgreen")),
+         main="BioDiv Practices Alto Valle")
+
+summary(dataBFP_AV[,1:8])
+
+library(GGally)
+
+g <- dataBFP_AV[,1:8]  %>% 
+  ggpairs(aes(color = as.factor(fertil_org1_ino0)), 
+          upper = list(continuous = wrap('cor', size = 3)),
+          lower = list(combo = wrap("facethist", bins = 15), 
+                       continuous = wrap("smooth_loess", alpha=0.3, size=0.1)),
+          diag = list(continuous = wrap("densityDiag", alpha = 0.5)))
+
+
+x11()
+g
+
+png("altovallepairs.png")
+print(g)
+dev.off()
+
+
+#Clasificación de las fincas
+bfp.dist <- vegdist(dataBFP_AV[,1:8], method = "gower", na.rm = TRUE)
+hc.bfp.av <- hclust(bfp.dist, method = "centroid" )
+plot(hc.bfp.av )
+
+sub_grp_6_av <- cutree(hc.bfp.av, k = 6)
+table(sub_grp_6_av)
+
+
+hc.bfp.av.j <- hclust(bfp.dist.j, method = "centroid" )
+bfp.dist.j <- vegdist(dataBFP_AV[,1:8], method = "jaccard", na.rm = TRUE)
+plot(hc.bfp.av.j )
+
+sub_grp_3_av.j <- cutree(hc.bfp.av.j, k = 3)
+table(sub_grp_3_av.j)
+
+pairs(dataBFP_AV[,1:8])
+View(dataBFP_AV[,1:8])
